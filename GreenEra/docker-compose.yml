@@ -1,0 +1,124 @@
+version: '3.9'
+
+networks:
+  green-era-network:
+    driver: bridge
+
+volumes:
+  pg_user_data:
+  pg_booking_data:
+  pg_gardener_data:
+
+services:
+
+  # ------------------- USER SERVICE DB -------------------
+  postgres-user:
+    image: postgres:15
+    container_name: postgres-user
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_user_data:/var/lib/postgresql/data
+    networks:
+      - green-era-network
+
+  # ------------------- BOOKING SERVICE DB -------------------
+  postgres-booking:
+    image: postgres:15
+    container_name: postgres-booking
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_booking_data:/var/lib/postgresql/data
+    networks:
+      - green-era-network
+
+  # ------------------- GARDENER SERVICE DB -------------------
+  postgres-gardener:
+    image: postgres:15
+    container_name: postgres-gardener
+    environment:
+      POSTGRES_DB: gardener_db
+      POSTGRES_USER: gardener
+      POSTGRES_PASSWORD: gardener
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_gardener_data:/var/lib/postgresql/data
+    networks:
+      - green-era-network
+
+  # ------------------- USER SERVICE -------------------
+  user-service:
+    image: user-service:latest
+    container_name: user-service
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres-user
+    networks:
+      - green-era-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # ------------------- BOOKING SERVICE -------------------
+  booking-service:
+    image: booking-service:latest
+    container_name: booking-service
+    build:
+      context: ./booking-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres-booking
+    networks:
+      - green-era-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+
+  # ------------------- GARDENER SERVICE -------------------
+  gardener-service:
+    image: gardener-service:latest
+    container_name: gardener-service
+    build:
+      context: ./gardener-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres-gardener
+    networks:
+      - green-era-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # ------------------- GATEWAY SERVICE -------------------
+  gateway-service:
+    image: gateway-service:latest
+    container_name: gateway-service
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    depends_on:
+      - user-service
+      - booking-service
+      - gardener-service
+    networks:
+      - green-era-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
