@@ -1,0 +1,18 @@
+package com.green_era.user_service.service;
+
+import com.green_era.user_service.dto.RegisterUserDto;
+import com.green_era.user_service.dto.UserDto;
+import com.green_era.user_service.utils.UserAlreadyExistException;
+import com.green_era.user_service.utils.UserNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public interface UserService {
+    UserDto registerUser(RegisterUserDto userDto) throws UserAlreadyExistException;
+    UserDto getUserById(String id) throws UserNotFoundException;
+    List<UserDto> getAllUsers();
+    String deleteUser(String id) throws UserNotFoundException;
+    String updateUser(String id, UserDto userDto) throws UserNotFoundException;
+}
