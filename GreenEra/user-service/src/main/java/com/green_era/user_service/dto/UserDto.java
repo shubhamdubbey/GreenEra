@@ -6,6 +6,10 @@ import lombok.Data;
 
 @Data
 public class UserDto {
+
+    @NotBlank(message = "Id is mandatory")
+    Long id;
+
     @NotBlank(message = "First name is mandatory")
     String firstName;
 

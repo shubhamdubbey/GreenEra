@@ -2,10 +2,7 @@ package com.green_era.booking_service.entity;
 
 import com.green_era.booking_service.utils.BookingStatus;
 import com.green_era.booking_service.utils.BookingType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -17,6 +14,7 @@ import java.time.LocalTime;
 public class BookingEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
 

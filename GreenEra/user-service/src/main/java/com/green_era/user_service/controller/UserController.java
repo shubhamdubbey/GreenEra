@@ -28,7 +28,7 @@ public class UserController {
     }
 
     @GetMapping("getUser/{id}")
-    ResponseEntity<UserDto> getUser(@PathVariable("id") String id) throws UserNotFoundException {
+    ResponseEntity<UserDto> getUser(@PathVariable("id") Long id) throws UserNotFoundException {
        return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
@@ -38,12 +38,12 @@ public class UserController {
     }
 
     @PutMapping("changeId/{id}")
-    ResponseEntity<String> updateUser(@PathVariable("id") String id, @RequestBody UserDto userDto) throws UserNotFoundException {
+    ResponseEntity<String> updateUser(@PathVariable("id") Long id, @RequestBody UserDto userDto) throws UserNotFoundException {
         return new ResponseEntity<>(userService.updateUser(id, userDto), HttpStatus.OK);
     }
 
     @DeleteMapping("deleteUser/{id}")
-    ResponseEntity<String> deleteById(@PathVariable("id") String id) throws UserNotFoundException {
+    ResponseEntity<String> deleteById(@PathVariable("id") Long id) throws UserNotFoundException {
        return new ResponseEntity<>(userService.deleteUser(id), HttpStatus.OK);
     }
 }

@@ -23,8 +23,11 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserDto registerUser(RegisterUserDto userDto) throws UserAlreadyExistException {
-        Optional<UserEntity> optionalUser = userRepository.findById(userDto.getEmail());
+        Optional<UserEntity> optionalUser = userRepository.findByEmail(userDto.getEmail());
         if(optionalUser.isPresent()) throw new UserAlreadyExistException("User is already registered with give email id.");
+
+        optionalUser = userRepository.findByPhoneNumber(userDto.getPhoneNumber());
+        if(optionalUser.isPresent()) throw new UserAlreadyExistException("User is already registered with given phone number.");
         UserEntity user = Mapper.registerUserToUser(userDto);
         user.setCreatedAt(LocalDate.now());
         user.setUpdatedAt(LocalDate.now());
@@ -35,7 +38,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserDto getUserById(String id) throws UserNotFoundException {
+    public UserDto getUserById(Long id) throws UserNotFoundException {
         Optional<UserEntity> user = userRepository.findById(id);
         if(user.isPresent()) return Mapper.userToUserDto(user.get());
         else throw new UserNotFoundException("No user registered with the given mail id.");
@@ -53,7 +56,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public String deleteUser(String id) throws UserNotFoundException {
+    public String deleteUser(Long id) throws UserNotFoundException {
         Optional<UserEntity> userEntity = userRepository.findById(id);
         if(userEntity.isPresent()){
             userRepository.deleteById(id);
@@ -62,7 +65,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public String updateUser(String id, UserDto userDto) throws UserNotFoundException {
+    public String updateUser(Long id, UserDto userDto) throws UserNotFoundException {
         Optional<UserEntity> userEntity = userRepository.findById(id);
         if(userEntity.isPresent()){
             UserEntity user = userEntity.get();

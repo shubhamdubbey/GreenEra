@@ -11,8 +11,8 @@ import java.util.List;
 @Service
 public interface UserService {
     UserDto registerUser(RegisterUserDto userDto) throws UserAlreadyExistException;
-    UserDto getUserById(String id) throws UserNotFoundException;
+    UserDto getUserById(Long id) throws UserNotFoundException;
     List<UserDto> getAllUsers();
-    String deleteUser(String id) throws UserNotFoundException;
-    String updateUser(String id, UserDto userDto) throws UserNotFoundException;
+    String deleteUser(Long id) throws UserNotFoundException;
+    String updateUser(Long id, UserDto userDto) throws UserNotFoundException;
 }

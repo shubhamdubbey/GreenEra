@@ -25,8 +25,8 @@ public class Mapper {
         userDto.setRole(user.getRole());
         userDto.setFirstName(user.getFirstName());
         userDto.setPhoneNumber(user.getPhoneNumber());
-        user.setLastName(user.getLastName());
-
+        userDto.setLastName(user.getLastName());
+        userDto.setId(user.getId());
         return userDto;
     }
 }
