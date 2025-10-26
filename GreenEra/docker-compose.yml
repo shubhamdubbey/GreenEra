@@ -10,6 +10,19 @@ volumes:
   pg_gardener_data:
 
 services:
+  # ------------------- DISCOVERY SERVICE -------------------
+  discovery-service:
+    image: discovery-service:latest
+    container_name: discovery-service
+    build:
+      context: ./discovery-service
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - green-era-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
   # ------------------- USER SERVICE DB -------------------
   postgres-user:
@@ -67,6 +80,7 @@ services:
       - "8081:8081"
     depends_on:
       - postgres-user
+      - discovery-service
     networks:
       - green-era-network
     environment:
@@ -83,11 +97,11 @@ services:
       - "8082:8082"
     depends_on:
       - postgres-booking
+      - discovery-service
     networks:
       - green-era-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-
 
   # ------------------- GARDENER SERVICE -------------------
   gardener-service:
@@ -100,6 +114,7 @@ services:
       - "8083:8083"
     depends_on:
       - postgres-gardener
+      - discovery-service
     networks:
       - green-era-network
     environment:
@@ -113,11 +128,12 @@ services:
       context: ./gateway-service
       dockerfile: Dockerfile
     ports:
-      - "8084:8084"
+      - "8080:8080"
     depends_on:
       - user-service
       - booking-service
       - gardener-service
+      - discovery-service
     networks:
       - green-era-network
     environment:

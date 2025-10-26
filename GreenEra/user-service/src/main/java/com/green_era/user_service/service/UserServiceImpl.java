@@ -7,7 +7,6 @@ import com.green_era.user_service.repository.UserRepository;
 import com.green_era.user_service.utils.Mapper;
 import com.green_era.user_service.utils.UserAlreadyExistException;
 import com.green_era.user_service.utils.UserNotFoundException;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;

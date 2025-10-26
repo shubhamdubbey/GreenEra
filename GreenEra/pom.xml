@@ -17,6 +17,7 @@
         <module>user-service</module>
         <module>gardener-service</module>
         <module>booking-service</module>
+        <module>discovery-service</module>
     </modules>
 
     <properties>
