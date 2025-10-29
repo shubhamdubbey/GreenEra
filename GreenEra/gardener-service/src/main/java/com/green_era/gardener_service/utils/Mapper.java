@@ -12,7 +12,9 @@ public class Mapper {
         gardener.setLocality(dto.getLocality());
         gardener.setPhoneNumber(dto.getPhoneNumber());
         gardener.setEmail(dto.getEmail());
-
+        gardener.setHourlyRate(dto.getHourlyRate());
+        gardener.setRating(dto.getRating());
+        gardener.setTotalJobsCompleted(dto.getJobsCompleted());
         return gardener;
     }
 
@@ -28,6 +30,7 @@ public class Mapper {
         dto.setPhoneNumber(entity.getPhoneNumber());
         dto.setRating(entity.getRating());
         dto.setJobsCompleted(entity.getTotalJobsCompleted());
+        dto.setHourlyRate(entity.getHourlyRate());
         return dto;
     }
 }

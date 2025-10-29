@@ -3,7 +3,8 @@ package com.green_era.booking_service.utils;
 public enum BookingStatus {
     PENDING("Pending"),
     CONFIRMED("Confirmed"),
-    CANCELLED("Cancelled");
+    CANCELLED("Cancelled"),
+    COMPLETED("Completed");
 
     String status;
 

@@ -46,6 +46,17 @@ public class GardenerEntity {
     @Column(name = "is_urgent_type")
     private boolean isUrgentType;
 
+    @Column(name = "hourly_rate")
+    private double hourlyRate;
+
+    public double getHourlyRate(){
+        return hourlyRate;
+    }
+
+    public void setHourlyRate(double hourlyRate){
+        this.hourlyRate = hourlyRate;
+    }
+
     public long getId() {
         return id;
     }

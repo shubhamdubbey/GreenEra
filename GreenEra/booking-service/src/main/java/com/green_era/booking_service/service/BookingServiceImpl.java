@@ -7,12 +7,13 @@ import com.green_era.booking_service.utils.BookingNotFoundException;
 import com.green_era.booking_service.utils.BookingStatus;
 import com.green_era.booking_service.utils.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class BookingServiceImpl implements BookingService{
 
     @Autowired
@@ -54,10 +55,12 @@ public class BookingServiceImpl implements BookingService{
     }
 
     @Override
-    public String deleteBooking(Long id) throws BookingNotFoundException {
+    public String cancelBooking(Long id) throws BookingNotFoundException {
         Optional<BookingEntity> bookingEntity = bookingRepository.findById(id);
         if(!bookingEntity.isPresent()) throw new BookingNotFoundException("Can't find booking with the given booking id.");
-        bookingRepository.delete(bookingEntity.get());
+        BookingEntity booking = bookingEntity.get();
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
         return "Success";
     }
 
@@ -85,13 +88,14 @@ public class BookingServiceImpl implements BookingService{
     }
 
     @Override
-    public BookingDto updateStatus(Long id, BookingStatus status) throws BookingNotFoundException {
+    public String completeBooking(Long id) throws BookingNotFoundException {
         Optional<BookingEntity> bookingEntity = bookingRepository.findById(id);
         if(!bookingEntity.isPresent()) throw new BookingNotFoundException("Can't find booking with the given booking id.");
         BookingEntity booking = bookingEntity.get();
-        booking.setBookingStatus(status);
+        booking.setBookingStatus(BookingStatus.COMPLETED);
+        // fiegn client
         bookingRepository.save(booking);
 
-        return Mapper.bookingToBookingDto(booking);
+        return "Success";
     }
 }

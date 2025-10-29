@@ -14,6 +14,8 @@ public class Mapper {
         bookingDto.setGardenerEmail(booking.getGardenerEmail());
         bookingDto.setBookingStatus(booking.getBookingStatus());
         bookingDto.setId(bookingDto.getId());
+        bookingDto.setServiceDescription(booking.getServiceDescription());
+        bookingDto.setPrice(booking.getPrice());
         return bookingDto;
     }
 
@@ -28,7 +30,8 @@ public class Mapper {
         booking.setGardenerEmail(dto.getGardenerEmail());
         booking.setUserEmail(dto.getUserEmail());
         if(dto.getId() != 0) booking.setId(dto.getId());
-
+        booking.setServiceDescription(dto.getServiceDescription());
+        booking.setPrice(dto.getPrice());
         return booking;
     }
 }

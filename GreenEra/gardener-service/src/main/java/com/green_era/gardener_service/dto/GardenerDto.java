@@ -22,9 +22,36 @@ public class GardenerDto {
     @NotBlank(message = "available is mandatory")
     private Boolean available;
 
+    @NotBlank(message =  "Hourly rate is mandatory")
+    private double hourlyRate;
+
     private double rating;
 
     private int jobsCompleted;
+
+    public double getHourlyRate() {
+        return hourlyRate;
+    }
+
+    public void setHourlyRate(double hourlyRate) {
+        this.hourlyRate = hourlyRate;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getJobsCompleted() {
+        return jobsCompleted;
+    }
+
+    public void setJobsCompleted(int jobsCompleted) {
+        this.jobsCompleted = jobsCompleted;
+    }
 
     public Long getId() {
         return id;

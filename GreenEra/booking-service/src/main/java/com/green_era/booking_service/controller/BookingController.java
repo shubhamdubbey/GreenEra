@@ -38,9 +38,9 @@ public class BookingController {
         return new ResponseEntity<>(bookingService.updateBooking(id, dto), HttpStatus.OK);
     }
 
-    @DeleteMapping("deleteBooking/{id}")
+    @DeleteMapping("cancelBooking/{id}")
     private ResponseEntity<String> deleteBooking(@PathVariable Long id) throws BookingNotFoundException {
-        return new ResponseEntity<>(bookingService.deleteBooking(id), HttpStatus.OK);
+        return new ResponseEntity<>(bookingService.cancelBooking(id), HttpStatus.OK);
     }
 
     @GetMapping("getAllUsersBookings{email}")
@@ -53,8 +53,12 @@ public class BookingController {
         return new ResponseEntity<>(bookingService.getBookingByGardener(email), HttpStatus.OK);
     }
 
-    @PatchMapping("updateBookingStatus/{id}/{status}")
-    private ResponseEntity<BookingDto> updateBookingStatus(@PathVariable("id") Long id, @PathVariable BookingStatus status) throws BookingNotFoundException {
-        return new ResponseEntity<>(bookingService.updateStatus(id, status), HttpStatus.OK);
+    @PatchMapping("completeBooking/{id}/{status}")
+    private ResponseEntity<String> completeBooking(@PathVariable("id") Long id, @PathVariable BookingStatus status) throws BookingNotFoundException {
+        return new ResponseEntity<>(bookingService.completeBooking(id), HttpStatus.OK);
+    }
+    @PatchMapping("cancelBooking/{id}/{status}")
+    private ResponseEntity<String> cancelBooking(@PathVariable("id") Long id, @PathVariable BookingStatus status) throws BookingNotFoundException {
+        return new ResponseEntity<>(bookingService.completeBooking(id), HttpStatus.OK);
     }
 }

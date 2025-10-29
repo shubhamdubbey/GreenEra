@@ -32,6 +32,27 @@ public class BookingDto {
 
     private BookingStatus bookingStatus;
 
+    @NotBlank(message = "description is mandatory")
+    private String serviceDescription;
+
+    private double price;
+
+    public String getServiceDescription() {
+        return serviceDescription;
+    }
+
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
     public Long getId() {
         return id;
     }
