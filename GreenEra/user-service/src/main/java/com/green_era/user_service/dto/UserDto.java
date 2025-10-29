@@ -8,22 +8,27 @@ import lombok.Data;
 public class UserDto {
 
     @NotBlank(message = "Id is mandatory")
-    Long id;
+    private Long id;
 
     @NotBlank(message = "First name is mandatory")
-    String firstName;
+    private String firstName;
 
     @NotBlank(message = "Last name is mandatory")
-    String lastName;
+    private String lastName;
 
     @NotBlank(message = "Email is mandatory")
-    String email;
+    private String email;
 
     @NotBlank(message = "Phone number is mandatory")
-    String phoneNumber;
+    private String phoneNumber;
 
     @NotBlank(message = "Role is mandatory")
-    RoleEnum role;
+    private RoleEnum role;
+
+    @NotBlank
+    private String address;
+
+    private boolean isActive;
 
     public Long getId() {
         return id;
@@ -71,5 +76,21 @@ public class UserDto {
 
     public void setRole(RoleEnum role) {
         this.role = role;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

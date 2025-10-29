@@ -15,6 +15,7 @@ public class Mapper {
         userEntity.setEmail(userDto.getEmail());
         userEntity.setPassword(userDto.getPassword());
         userEntity.setPhoneNumber(userDto.getPhoneNumber());
+        userEntity.setAddress(userDto.getAddress());
 
         return userEntity;
     }
@@ -27,6 +28,8 @@ public class Mapper {
         userDto.setPhoneNumber(user.getPhoneNumber());
         userDto.setLastName(user.getLastName());
         userDto.setId(user.getId());
+        userDto.setActive(user.getActive());
+        userDto.setAddress(user.getAddress());
         return userDto;
     }
 }

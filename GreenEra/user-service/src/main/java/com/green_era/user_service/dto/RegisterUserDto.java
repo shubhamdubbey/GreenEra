@@ -9,25 +9,28 @@ import lombok.Data;
 @Data
 public class RegisterUserDto {
     @NotBlank(message = "First name is mandatory")
-    String firstName;
+    private String firstName;
 
     @NotBlank(message = "Last name is mandatory")
-    String lastName;
+    private String lastName;
 
     @NotBlank(message = "Email is mandatory")
-    String email;
+    private String email;
 
     @NotBlank(message = "Password is mandatory")
     @Size(min = 8, message = "Password must be at least 8 characters")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
             message = "Password must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character")
-    String password;
+    private String password;
 
     @NotBlank(message = "Phone number is mandatory")
-    String phoneNumber;
+    private String phoneNumber;
 
     @NotBlank(message = "Role is mandatory")
-    RoleEnum role;
+    private RoleEnum role;
+
+    @NotBlank(message = "Address is mandatory")
+    private String address;
 
     public String getFirstName() {
         return firstName;
@@ -75,5 +78,13 @@ public class RegisterUserDto {
 
     public void setRole(RoleEnum role) {
         this.role = role;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

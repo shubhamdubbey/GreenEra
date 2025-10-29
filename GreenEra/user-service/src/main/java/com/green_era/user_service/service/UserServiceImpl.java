@@ -8,13 +8,14 @@ import com.green_era.user_service.utils.Mapper;
 import com.green_era.user_service.utils.UserAlreadyExistException;
 import com.green_era.user_service.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
+@Service
 public class UserServiceImpl implements UserService{
 
     @Autowired
@@ -44,6 +45,13 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public UserDto getUserByEmail(String email) throws UserNotFoundException {
+        Optional<UserEntity> userEntity = userRepository.findByEmail(email);
+        if(userEntity.isPresent()) return Mapper.userToUserDto(userEntity.get());
+        else throw new UserNotFoundException("No user registered with the given mail id");
+    }
+
+    @Override
     public List<UserDto> getAllUsers() {
         Iterable<UserEntity> listOfUsers = userRepository.findAll();
         List<UserDto> allUsers = new ArrayList<>();
@@ -58,8 +66,10 @@ public class UserServiceImpl implements UserService{
     public String deleteUser(Long id) throws UserNotFoundException {
         Optional<UserEntity> userEntity = userRepository.findById(id);
         if(userEntity.isPresent()){
-            userRepository.deleteById(id);
-            return "Success";
+            UserEntity user = userEntity.get();
+            user.setActive(false);
+            userRepository.save(user);
+            return "success";
         } else throw new UserNotFoundException("No user registered with the given mail id.");
     }
 
