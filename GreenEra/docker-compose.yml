@@ -1,5 +1,4 @@
 version: '3.9'
-
 networks:
   green-era-network:
     driver: bridge
@@ -23,6 +22,11 @@ services:
       - green-era-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ------------------- USER SERVICE DB -------------------
   postgres-user:
@@ -79,8 +83,10 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - postgres-user
-      - discovery-service
+      postgres-user:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
     networks:
       - green-era-network
     environment:
@@ -96,8 +102,10 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - postgres-booking
-      - discovery-service
+      postgres-booking:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
     networks:
       - green-era-network
     environment:
@@ -113,8 +121,10 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - postgres-gardener
-      - discovery-service
+      postgres-gardener:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
     networks:
       - green-era-network
     environment:
@@ -128,12 +138,16 @@ services:
       context: ./gateway-service
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8090:8090"
     depends_on:
-      - user-service
-      - booking-service
-      - gardener-service
-      - discovery-service
+      user-service:
+        condition: service_started
+      booking-service:
+        condition: service_started
+      gardener-service:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
     networks:
       - green-era-network
     environment:
