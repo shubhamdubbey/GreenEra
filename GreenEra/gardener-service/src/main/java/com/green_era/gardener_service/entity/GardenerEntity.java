@@ -1,11 +1,17 @@
 package com.green_era.gardener_service.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "gardeners")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class GardenerEntity {
 
     @Id
@@ -26,7 +32,16 @@ public class GardenerEntity {
     private String locality;
 
     @Column(name = "is_available")
-    private boolean isAvailable;
+    @Builder.Default
+    private boolean isAvailable = true;
+
+    @Column(name = "rating")
+    @Builder.Default
+    private double rating = 0.0;
+
+    @Column(name = "total_jobs_completed")
+    @Builder.Default
+    private int totalJobsCompleted = 0;
 
     @Column(name = "is_urgent_type")
     private boolean isUrgentType;

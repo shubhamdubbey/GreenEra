@@ -12,8 +12,10 @@ public interface GardenerService {
     GardenerDto registerGardener(GardenerDto gardenerDto) throws DuplicateAccountException;
     List<GardenerDto> getAllGardeners();
     GardenerDto getGardenerById(Long id) throws AccountNotFoundException;
+    GardenerDto getGardenerByEmail(String email) throws AccountNotFoundException;
     String deleteGardener(Long id) throws AccountNotFoundException;
     List<GardenerDto> getAvailableGardeners(String locality, boolean availability);
     GardenerDto updateAvailability(Long id, Boolean available) throws AccountNotFoundException;
     String updateGardener(Long id, GardenerDto dto) throws AccountNotFoundException;
+    GardenerDto markUnavailableByEmail(String email) throws AccountNotFoundException;
 }

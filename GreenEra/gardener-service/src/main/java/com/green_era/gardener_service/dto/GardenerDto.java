@@ -5,21 +5,26 @@ import lombok.Data;
 
 @Data
 public class GardenerDto {
-    Long id;
+    private Long id;
+
     @NotBlank(message = "email id is mandatory")
-    String email;   //maps to user's email
+    private String email;   //maps to user's email
 
     @NotBlank(message = "name is mandatory")
-    String name;
+    private String name;
 
     @NotBlank(message = "phone number is mandatory")
-    String phoneNumber;
+    private String phoneNumber;
 
     @NotBlank(message = "locality is mandatory")
-    String locality;
+    private String locality;
 
     @NotBlank(message = "available is mandatory")
-    Boolean available;
+    private Boolean available;
+
+    private double rating;
+
+    private int jobsCompleted;
 
     public Long getId() {
         return id;

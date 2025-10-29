@@ -25,8 +25,9 @@ public class Mapper {
         dto.setName(entity.getName());
         dto.setLocality(entity.getLocality());
         dto.setEmail(entity.getEmail());
-        dto.setPhoneNumber(dto.getPhoneNumber());
-
+        dto.setPhoneNumber(entity.getPhoneNumber());
+        dto.setRating(entity.getRating());
+        dto.setJobsCompleted(entity.getTotalJobsCompleted());
         return dto;
     }
 }

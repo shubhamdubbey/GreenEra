@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface GardenerRepository extends JpaRepository<GardenerEntity, Long> {
     Optional<GardenerEntity> findByEmail(String email);
     Optional<GardenerEntity> findByPhoneNumber(String phoneNumber);
-    List<GardenerEntity> findByLocalityAndAvailable(String locality, boolean available);
+    List<GardenerEntity> findByLocalityAndIsAvailable(String locality, boolean isAvailable);
 }

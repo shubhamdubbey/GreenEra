@@ -33,6 +33,16 @@ public class GardenerController {
         return new ResponseEntity<>(gardenerService.getGardenerById(id), HttpStatus.OK);
     }
 
+    @GetMapping("getGardener/{email}")
+    ResponseEntity<GardenerDto> getGardenerByEmail(@PathVariable("email") String email) throws AccountNotFoundException {
+        return new ResponseEntity<>(gardenerService.getGardenerByEmail(email), HttpStatus.OK);
+    }
+
+    @PatchMapping("markUnavailableByEmail/{email}")
+    ResponseEntity<GardenerDto> markUnavailableByEmail(@PathVariable("email") String email) throws AccountNotFoundException {
+        return new ResponseEntity<>(gardenerService.markUnavailableByEmail(email), HttpStatus.OK);
+    }
+
     @PutMapping("updateGardener/{id}")
     ResponseEntity<String> updateGardener(@PathVariable("id") Long id, @RequestBody GardenerDto dto) throws AccountNotFoundException {
         return new ResponseEntity<>(gardenerService.updateGardener(id, dto), HttpStatus.ACCEPTED);
@@ -43,7 +53,7 @@ public class GardenerController {
         return new ResponseEntity<>(gardenerService.deleteGardener(id), HttpStatus.OK);
     }
 
-    @GetMapping("getAvailableGardeners/{locality}/{availability)")
+    @GetMapping("getAvailableGardeners/{locality}/{availability}")
     ResponseEntity<List<GardenerDto>> getAvailableGardeners(@PathVariable String locality, @PathVariable boolean availability){
         return new ResponseEntity<>(gardenerService.getAvailableGardeners(locality, availability), HttpStatus.OK);
     }

@@ -7,11 +7,13 @@ import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
 import com.green_era.gardener_service.utils.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class GardenerServiceImpl implements GardenerService{
 
     @Autowired
@@ -49,6 +51,13 @@ public class GardenerServiceImpl implements GardenerService{
     }
 
     @Override
+    public GardenerDto getGardenerByEmail(String email) throws AccountNotFoundException {
+        Optional<GardenerEntity> gardenerEntity = gardenerRepository.findByEmail(email);
+        if(gardenerEntity.isPresent()) return Mapper.gardenerEntityToDto(gardenerEntity.get());
+        else throw new AccountNotFoundException("Gardener not registered with given mail id.");
+    }
+
+    @Override
     public String deleteGardener(Long id) throws AccountNotFoundException {
         Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findById(id);
         if(optionalOfGardenerEntity.isPresent()){
@@ -59,7 +68,7 @@ public class GardenerServiceImpl implements GardenerService{
 
     @Override
     public List<GardenerDto> getAvailableGardeners(String locality, boolean availability) {
-        List<GardenerEntity> listOfGardeners = gardenerRepository.findByLocalityAndAvailable(locality, availability);
+        List<GardenerEntity> listOfGardeners = gardenerRepository.findByLocalityAndIsAvailable(locality, availability);
         List<GardenerDto> gardeners = new ArrayList<>();
         listOfGardeners.forEach(gardener -> {
             gardeners.add(Mapper.gardenerEntityToDto(gardener));
@@ -88,5 +97,16 @@ public class GardenerServiceImpl implements GardenerService{
             gardenerRepository.save(gardener);
             return "Success";
         } else throw new AccountNotFoundException("No gardener found with the given id.");
+    }
+
+    @Override
+    public GardenerDto markUnavailableByEmail(String email) throws AccountNotFoundException {
+        Optional<GardenerEntity> gardenerEntity = gardenerRepository.findByEmail(email);
+        if(gardenerEntity.isPresent()){
+            GardenerEntity gardener = gardenerEntity.get();
+            gardener.setAvailable(false);
+            gardenerRepository.save(gardener);
+            return Mapper.gardenerEntityToDto(gardener);
+        }else throw new AccountNotFoundException("No gardener found with given email id.");
     }
 }
