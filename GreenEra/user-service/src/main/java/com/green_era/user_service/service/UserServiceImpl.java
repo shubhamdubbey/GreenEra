@@ -1,8 +1,10 @@
 package com.green_era.user_service.service;
 
+import com.green_era.user_service.dto.BookingDto;
 import com.green_era.user_service.dto.RegisterUserDto;
 import com.green_era.user_service.dto.UserDto;
 import com.green_era.user_service.entity.UserEntity;
+import com.green_era.user_service.feign.BookingClient;
 import com.green_era.user_service.repository.UserRepository;
 import com.green_era.user_service.utils.Mapper;
 import com.green_era.user_service.utils.UserAlreadyExistException;
@@ -17,6 +19,9 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService{
+
+    @Autowired
+    BookingClient bookingClient;
 
     @Autowired
     private UserRepository userRepository;
@@ -90,5 +95,15 @@ public class UserServiceImpl implements UserService{
             return "Success";
         }
         else throw new UserNotFoundException("No user registered with the given email id.");
+    }
+
+    @Override
+    public List<BookingDto> getAllBookings(String email) {
+        return bookingClient.getALlUsersBookings(email);
+    }
+
+    @Override
+    public String cancelBooking(Long id) {
+        return bookingClient.cancelBooking(id);
     }
 }

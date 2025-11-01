@@ -1,5 +1,6 @@
 package com.green_era.user_service.controller;
 
+import com.green_era.user_service.dto.BookingDto;
 import com.green_era.user_service.dto.RegisterUserDto;
 import com.green_era.user_service.dto.UserDto;
 import com.green_era.user_service.service.UserService;
@@ -32,7 +33,7 @@ public class UserController {
        return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
-    @GetMapping("getUser/{email}")
+    @GetMapping("getUserByEmail/{email}")
     ResponseEntity<UserDto> getUser(@PathVariable("email") String email) throws UserNotFoundException {
         return new ResponseEntity<>(userService.getUserByEmail(email), HttpStatus.OK);
     }
@@ -51,4 +52,15 @@ public class UserController {
     ResponseEntity<String> deleteById(@PathVariable("id") Long id) throws UserNotFoundException {
        return new ResponseEntity<>(userService.deleteUser(id), HttpStatus.OK);
     }
+
+    @GetMapping("/booking/getALlUsersBookings/{email}")
+    ResponseEntity<List<BookingDto>>getALlUsersBookings(@PathVariable("email") String email){
+       return new ResponseEntity<>(userService.getAllBookings(email), HttpStatus.OK);
+    }
+
+    @PatchMapping("cancelBooking/{id}")
+    ResponseEntity<String> cancelBooking(@PathVariable("id") Long id){
+       return new ResponseEntity<>(userService.cancelBooking(id), HttpStatus.OK);
+    }
+
 }
