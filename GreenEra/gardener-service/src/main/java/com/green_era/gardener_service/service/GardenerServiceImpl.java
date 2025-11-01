@@ -1,7 +1,9 @@
 package com.green_era.gardener_service.service;
 
+import com.green_era.gardener_service.dto.BookingDto;
 import com.green_era.gardener_service.dto.GardenerDto;
 import com.green_era.gardener_service.entity.GardenerEntity;
+import com.green_era.gardener_service.feign.BookingClient;
 import com.green_era.gardener_service.repository.GardenerRepository;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
@@ -17,7 +19,11 @@ import java.util.Optional;
 public class GardenerServiceImpl implements GardenerService{
 
     @Autowired
+    BookingClient bookingClient;
+
+    @Autowired
     GardenerRepository gardenerRepository;
+
     @Override
     public GardenerDto registerGardener(GardenerDto gardenerDto) throws DuplicateAccountException {
         Optional<GardenerEntity> gardenerEntityOptionalEmail = gardenerRepository.findByEmail(gardenerDto.getEmail());
@@ -78,8 +84,8 @@ public class GardenerServiceImpl implements GardenerService{
     }
 
     @Override
-    public GardenerDto updateAvailability(Long id, Boolean available) throws AccountNotFoundException {
-        Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findById(id);
+    public GardenerDto updateAvailability(String email, Boolean available) throws AccountNotFoundException {
+        Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findByEmail(email);
         if(optionalOfGardenerEntity.isPresent()){
             GardenerEntity gardener = optionalOfGardenerEntity.get();
             gardener.setAvailable(available);
@@ -108,5 +114,10 @@ public class GardenerServiceImpl implements GardenerService{
             gardenerRepository.save(gardener);
             return Mapper.gardenerEntityToDto(gardener);
         }else throw new AccountNotFoundException("No gardener found with given email id.");
+    }
+
+    @Override
+    public List<BookingDto> getAllBookings(String email) {
+        return bookingClient.getBookingsbyGardener(email);
     }
 }

@@ -49,6 +49,22 @@ public class GardenerEntity {
     @Column(name = "hourly_rate")
     private double hourlyRate;
 
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getTotalJobsCompleted() {
+        return totalJobsCompleted;
+    }
+
+    public void setTotalJobsCompleted(int totalJobsCompleted) {
+        this.totalJobsCompleted = totalJobsCompleted;
+    }
+
     public double getHourlyRate(){
         return hourlyRate;
     }
