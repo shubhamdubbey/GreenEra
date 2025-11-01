@@ -45,7 +45,7 @@ public class BookingController {
 
     @GetMapping("getAllUsersBookings{email}")
     private ResponseEntity<List<BookingDto>> getALlUsersBookings(@PathVariable("email") String email){
-        return new ResponseEntity<>(bookingService.getBooingByUser(email), HttpStatus.OK);
+        return new ResponseEntity<>(bookingService.getBookingByUser(email), HttpStatus.OK);
     }
 
     @GetMapping("getAllGardenerBookings{email}")
@@ -57,8 +57,8 @@ public class BookingController {
     private ResponseEntity<String> completeBooking(@PathVariable("id") Long id, @PathVariable BookingStatus status) throws BookingNotFoundException {
         return new ResponseEntity<>(bookingService.completeBooking(id), HttpStatus.OK);
     }
-    @PatchMapping("cancelBooking/{id}/{status}")
-    private ResponseEntity<String> cancelBooking(@PathVariable("id") Long id, @PathVariable BookingStatus status) throws BookingNotFoundException {
-        return new ResponseEntity<>(bookingService.completeBooking(id), HttpStatus.OK);
+    @PatchMapping("cancelBooking/{id}")
+    private ResponseEntity<String> cancelBooking(@PathVariable("id") Long id) throws BookingNotFoundException {
+        return new ResponseEntity<>(bookingService.cancelBooking(id), HttpStatus.OK);
     }
 }

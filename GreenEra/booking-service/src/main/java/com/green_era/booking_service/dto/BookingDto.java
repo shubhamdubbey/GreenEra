@@ -2,6 +2,7 @@ package com.green_era.booking_service.dto;
 
 import com.green_era.booking_service.utils.BookingStatus;
 import com.green_era.booking_service.utils.BookingType;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -36,6 +37,46 @@ public class BookingDto {
     private String serviceDescription;
 
     private double price;
+
+    private String userName;
+
+    private String userPhone;
+
+    private String gardenerName;
+
+    private String gardenerPhone;
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
+
+    public String getGardenerName() {
+        return gardenerName;
+    }
+
+    public void setGardenerName(String gardenerName) {
+        this.gardenerName = gardenerName;
+    }
+
+    public String getGardenerPhone() {
+        return gardenerPhone;
+    }
+
+    public void setGardenerPhone(String gardenerPhone) {
+        this.gardenerPhone = gardenerPhone;
+    }
 
     public String getServiceDescription() {
         return serviceDescription;

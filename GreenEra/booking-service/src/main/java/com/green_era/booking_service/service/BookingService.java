@@ -14,7 +14,7 @@ public interface BookingService {
     List<BookingDto> getAllBooking();
     BookingDto updateBooking(Long id, BookingDto dto) throws BookingNotFoundException;
     String cancelBooking(Long id) throws BookingNotFoundException;
-    List<BookingDto> getBooingByUser(String userEmail);
+    List<BookingDto> getBookingByUser(String userEmail);
     List<BookingDto> getBookingByGardener(String gardenerEmail);
     String completeBooking(Long id) throws BookingNotFoundException;
 }

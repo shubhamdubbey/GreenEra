@@ -18,7 +18,7 @@ public interface GardenerClient {
     List<GardenerDto> getAvailableGardeners(@PathVariable("locality") String locality,
                                             @PathVariable("availability") boolean availability);
 
-    @PatchMapping("/gardener/updateAvailability/{id}/{availability}")
-    GardenerDto updateAvailability(@PathVariable("id") Long id,
+    @PatchMapping("/gardener/updateAvailability/{email}/{availability}")
+    GardenerDto updateAvailability(@PathVariable("email") String email,
                                    @PathVariable("availability") boolean availability);
 }

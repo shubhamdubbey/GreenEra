@@ -2,8 +2,10 @@ package com.green_era.booking_service.service;
 
 import com.green_era.booking_service.dto.BookingDto;
 import com.green_era.booking_service.dto.GardenerDto;
+import com.green_era.booking_service.dto.UserDto;
 import com.green_era.booking_service.entity.BookingEntity;
 import com.green_era.booking_service.feign.GardenerClient;
+import com.green_era.booking_service.feign.UserClient;
 import com.green_era.booking_service.repository.BookingRepository;
 import com.green_era.booking_service.utils.BookingNotFoundException;
 import com.green_era.booking_service.utils.BookingStatus;
@@ -24,6 +26,9 @@ public class BookingServiceImpl implements BookingService{
 
     @Autowired
     BookingRepository bookingRepository;
+
+    @Autowired
+    UserClient userClient;
 
     @Autowired
     GardenerClient gardenerClient;
@@ -54,11 +59,17 @@ public class BookingServiceImpl implements BookingService{
         booking.setBookingStatus(BookingStatus.PENDING);
         booking.setPrice(price);
 
+        booking.setGardenerName(gardener.getName());
+        booking.setGardenerPhone(gardener.getPhoneNumber());
+
+        UserDto user = userClient.getUser(dto.getUserEmail());
+        booking.setUserName(user.getFirstName() + " " + user.getLastName());
+        booking.setUserPhone(user.getPhoneNumber());
+
         BookingEntity saved = bookingRepository.save(booking);
 
         // Mark gardener unavailable (simple approach; can be improved to per-time-slot)
-        gardener.setAvailable(false);
-        gardenerClient.updateAvailability(gardener.getId(), false);
+        gardenerClient.updateAvailability(gardener.getEmail(), false);
 
         return Mapper.bookingToBookingDto(saved);
     }
@@ -98,11 +109,12 @@ public class BookingServiceImpl implements BookingService{
         BookingEntity booking = bookingEntity.get();
         booking.setBookingStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
+        gardenerClient.updateAvailability(booking.getGardenerEmail(), true);
         return "Success";
     }
 
     @Override
-    public List<BookingDto> getBooingByUser(String userEmail) {
+    public List<BookingDto> getBookingByUser(String userEmail) {
         List<BookingEntity> allUserBooking = bookingRepository.findBookingByUserEmail(userEmail);
         List<BookingDto> bookings = new ArrayList<>();
         allUserBooking.forEach(booking -> {
@@ -130,6 +142,7 @@ public class BookingServiceImpl implements BookingService{
         if(!bookingEntity.isPresent()) throw new BookingNotFoundException("Can't find booking with the given booking id.");
         BookingEntity booking = bookingEntity.get();
         booking.setBookingStatus(BookingStatus.COMPLETED);
+        gardenerClient.updateAvailability(booking.getGardenerEmail(), true);
         bookingRepository.save(booking);
 
         return "Success";

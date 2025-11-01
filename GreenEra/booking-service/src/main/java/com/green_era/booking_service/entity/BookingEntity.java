@@ -52,6 +52,50 @@ public class BookingEntity {
     @Column(name = "updated_at")
     private  LocalDateTime updatedAt;
 
+    @Column(name = "user_name")
+    private String userName;
+
+    @Column(name = "user_phone")
+    private String userPhone;
+
+    @Column(name = "gardener_name")
+    private String gardenerName;
+
+    @Column(name = "gardener_phone")
+    private String gardenerPhone;
+
+    public String getGardenerName() {
+        return gardenerName;
+    }
+
+    public void setGardenerName(String gardenerName) {
+        this.gardenerName = gardenerName;
+    }
+
+    public String getGardenerPhone() {
+        return gardenerPhone;
+    }
+
+    public void setGardenerPhone(String gardenerPhone) {
+        this.gardenerPhone = gardenerPhone;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
+
     public String getServiceDescription() {
         return serviceDescription;
     }

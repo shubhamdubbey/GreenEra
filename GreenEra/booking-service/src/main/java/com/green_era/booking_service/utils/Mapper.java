@@ -16,6 +16,10 @@ public class Mapper {
         bookingDto.setId(bookingDto.getId());
         bookingDto.setServiceDescription(booking.getServiceDescription());
         bookingDto.setPrice(booking.getPrice());
+        bookingDto.setUserName(booking.getUserName());
+        bookingDto.setUserPhone(booking.getUserPhone());
+        bookingDto.setGardenerName(booking.getGardenerName());
+        bookingDto.setGardenerPhone(booking.getGardenerPhone());
         return bookingDto;
     }
 
