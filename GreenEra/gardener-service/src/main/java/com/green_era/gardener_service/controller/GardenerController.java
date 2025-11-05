@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -75,4 +77,15 @@ public class GardenerController {
     ResponseEntity<String> blockSlot(@RequestBody GardenerAvaibilityDto dto){
         return new ResponseEntity<>(gardenerService.BlockGardenerSlot(dto), HttpStatus.OK);
     }
+
+    @GetMapping("getBlockedSlots/{email}")
+    ResponseEntity<List<GardenerAvaibilityDto>> getBlockedSlots(@PathVariable("email") String email){
+        return new ResponseEntity<>(gardenerService.getBlockedSlots(email), HttpStatus.OK);
+    }
+
+    @DeleteMapping("deleteBlockedSlots/{email}/{date}/{time}")
+    ResponseEntity<String> deleteBlockedSlots(@PathVariable("email") String email, @PathVariable("date")LocalDate date, @PathVariable("time")LocalTime time){
+        return new ResponseEntity<>(gardenerService.deleteBlockedSlots(email, date, time), HttpStatus.OK);
+    }
+
 }

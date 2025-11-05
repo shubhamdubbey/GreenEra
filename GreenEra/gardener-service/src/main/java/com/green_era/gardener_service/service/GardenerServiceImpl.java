@@ -143,4 +143,29 @@ public class GardenerServiceImpl implements GardenerService{
 
         return "success";
     }
+
+    @Override
+    public List<GardenerAvaibilityDto> getBlockedSlots(String email) {
+        List<GardenerAvailability> list = gardenerAvailabilityRepository.findByGardenerEmail(email);
+        List<GardenerAvaibilityDto> listOfGardeners = new ArrayList<>();
+        list.forEach(g -> {
+            GardenerAvaibilityDto gardenerAvaibilityDto = new GardenerAvaibilityDto();
+            gardenerAvaibilityDto.setDate(g.getDate());
+            gardenerAvaibilityDto.setEmail(g.getGardener_email());
+            gardenerAvaibilityDto.setStartTime(g.getStartTime());
+            gardenerAvaibilityDto.setEndTime(g.getEndTime());
+
+            listOfGardeners.add(gardenerAvaibilityDto);
+        });
+
+        return listOfGardeners;
+    }
+
+    @Override
+    public String deleteBlockedSlots(String email, LocalDate date, LocalTime time) {
+        Optional<GardenerAvailability> gardenerAvailability = gardenerAvailabilityRepository.findByGardenerEmailAndDateAndStartTime(email, date, time);
+        gardenerAvailability.ifPresent(availability -> gardenerAvailabilityRepository.delete(availability));
+
+        return "success";
+    }
 }
