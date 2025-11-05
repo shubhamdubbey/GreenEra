@@ -1,12 +1,15 @@
 package com.green_era.gardener_service.service;
 
 import com.green_era.gardener_service.dto.BookingDto;
+import com.green_era.gardener_service.dto.GardenerAvaibilityDto;
 import com.green_era.gardener_service.dto.GardenerDto;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
 import com.green_era.gardener_service.utils.GardenerType;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -21,4 +24,5 @@ public interface GardenerService {
     String updateGardener(Long id, GardenerDto dto) throws AccountNotFoundException;
     GardenerDto markUnavailableByEmail(String email) throws AccountNotFoundException;
     List<BookingDto> getAllBookings(String email);
+    String BlockGardenerSlot(GardenerAvaibilityDto dto);
 }

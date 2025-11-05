@@ -1,9 +1,12 @@
 package com.green_era.gardener_service.service;
 
 import com.green_era.gardener_service.dto.BookingDto;
+import com.green_era.gardener_service.dto.GardenerAvaibilityDto;
 import com.green_era.gardener_service.dto.GardenerDto;
+import com.green_era.gardener_service.entity.GardenerAvailability;
 import com.green_era.gardener_service.entity.GardenerEntity;
 import com.green_era.gardener_service.feign.BookingClient;
+import com.green_era.gardener_service.repository.GardenerAvailabilityRepository;
 import com.green_era.gardener_service.repository.GardenerRepository;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
@@ -12,6 +15,8 @@ import com.green_era.gardener_service.utils.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +29,9 @@ public class GardenerServiceImpl implements GardenerService{
 
     @Autowired
     GardenerRepository gardenerRepository;
+
+    @Autowired
+    GardenerAvailabilityRepository gardenerAvailabilityRepository;
 
     @Override
     public GardenerDto registerGardener(GardenerDto gardenerDto) throws DuplicateAccountException {
@@ -120,5 +128,19 @@ public class GardenerServiceImpl implements GardenerService{
     @Override
     public List<BookingDto> getAllBookings(String email) {
         return bookingClient.getBookingsbyGardener(email);
+    }
+
+    @Override
+    public String BlockGardenerSlot(GardenerAvaibilityDto dto) {
+        GardenerAvailability gardenerAvailability = new GardenerAvailability();
+        gardenerAvailability.setGardener_email(dto.getEmail());
+        gardenerAvailability.setDate(dto.getDate());
+        gardenerAvailability.setStartTime(dto.getStartTime());
+        gardenerAvailability.setEndTime(dto.getEndTime());
+        gardenerAvailability.setBooked(true);
+
+        gardenerAvailabilityRepository.save(gardenerAvailability);
+
+        return "success";
     }
 }

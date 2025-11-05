@@ -1,6 +1,7 @@
 package com.green_era.gardener_service.controller;
 
 import com.green_era.gardener_service.dto.BookingDto;
+import com.green_era.gardener_service.dto.GardenerAvaibilityDto;
 import com.green_era.gardener_service.dto.GardenerDto;
 import com.green_era.gardener_service.service.GardenerService;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
@@ -68,5 +69,10 @@ public class GardenerController {
     @GetMapping("getAllGardenerBookings/{email}")
     ResponseEntity<List<BookingDto>> getAllBookings(@PathVariable("email") String email) throws AccountNotFoundException {
         return new ResponseEntity<>(gardenerService.getAllBookings(email), HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("blockSlot")
+    ResponseEntity<String> blockSlot(@RequestBody GardenerAvaibilityDto dto){
+        return new ResponseEntity<>(gardenerService.BlockGardenerSlot(dto), HttpStatus.OK);
     }
 }
