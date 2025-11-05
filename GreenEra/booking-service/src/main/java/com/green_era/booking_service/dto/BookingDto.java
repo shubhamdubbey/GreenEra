@@ -25,11 +25,13 @@ public class BookingDto {
     @NotBlank(message = "startTime id is must.")
     private LocalTime startTime;
 
-    @NotBlank(message = "endTime id is must.")
     private LocalTime endTime;
 
     @NotBlank(message = "bookingType id is must.")
     private BookingType bookingType;
+
+    @NotBlank(message = "locality is must.")
+    private String locality;
 
     private BookingStatus bookingStatus;
 
@@ -45,6 +47,22 @@ public class BookingDto {
     private String gardenerName;
 
     private String gardenerPhone;
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getLocality() {
+        return locality;
+    }
+
+    public void setLocality(String locality) {
+        this.locality = locality;
+    }
 
     public String getUserName() {
         return userName;
@@ -132,14 +150,6 @@ public class BookingDto {
 
     public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
     }
 
     public BookingType getBookingType() {

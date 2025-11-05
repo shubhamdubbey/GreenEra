@@ -2,6 +2,8 @@ package com.green_era.booking_service.dto;
 
 import lombok.Data;
 
+import java.time.LocalTime;
+
 @Data
 public class GardenerDto {
     private Long id;
@@ -21,6 +23,36 @@ public class GardenerDto {
     private double rating;
 
     private int jobsCompleted;
+
+    private String gardenerType;
+
+    private LocalTime workStartTime;
+
+    private LocalTime workEndTime;
+
+    public LocalTime getWorkStartTime() {
+        return workStartTime;
+    }
+
+    public void setWorkStartTime(LocalTime workStartTime) {
+        this.workStartTime = workStartTime;
+    }
+
+    public LocalTime getWorkEndTime() {
+        return workEndTime;
+    }
+
+    public void setWorkEndTime(LocalTime workEndTime) {
+        this.workEndTime = workEndTime;
+    }
+
+    public String getGardenerType() {
+        return gardenerType;
+    }
+
+    public void setGardenerType(String gardenerType) {
+        this.gardenerType = gardenerType;
+    }
 
     public double getHourlyRate() {
         return hourlyRate;
