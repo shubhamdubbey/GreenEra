@@ -1,6 +1,7 @@
 package com.green_era.booking_service.service;
 
 import com.green_era.booking_service.dto.BookingDto;
+import com.green_era.booking_service.dto.GardenerAvaibilityDto;
 import com.green_era.booking_service.dto.GardenerDto;
 import com.green_era.booking_service.dto.UserDto;
 import com.green_era.booking_service.entity.BookingEntity;
@@ -104,6 +105,10 @@ public class BookingServiceImpl implements BookingService {
 
         // Step 9: Mark gardener unavailable (temporary)
         gardenerClient.updateAvailability(selected.getEmail(), false);
+
+        // Step 10: Block gardener's slot
+        GardenerAvaibilityDto gardenerAvaibilityDto = new GardenerAvaibilityDto(selected.getEmail(), booking.getBookingDate(), booking.getStartTime(), booking.getEndTime());
+        gardenerClient.blockSlot(gardenerAvaibilityDto);
 
         return Mapper.bookingToBookingDto(saved);
     }
