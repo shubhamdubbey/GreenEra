@@ -5,6 +5,7 @@ import com.green_era.gardener_service.dto.GardenerDto;
 import com.green_era.gardener_service.service.GardenerService;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
+import com.green_era.gardener_service.utils.GardenerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,9 +55,9 @@ public class GardenerController {
         return new ResponseEntity<>(gardenerService.deleteGardener(id), HttpStatus.OK);
     }
 
-    @GetMapping("getAvailableGardeners/{locality}/{availability}")
-    ResponseEntity<List<GardenerDto>> getAvailableGardeners(@PathVariable String locality, @PathVariable boolean availability){
-        return new ResponseEntity<>(gardenerService.getAvailableGardeners(locality, availability), HttpStatus.OK);
+    @GetMapping("getAvailableGardeners/{locality}/{availability}/{gardenerType}")
+    ResponseEntity<List<GardenerDto>> getAvailableGardeners(@PathVariable String locality, @PathVariable boolean availability, @PathVariable GardenerType gardenerType){
+        return new ResponseEntity<>(gardenerService.findByLocalityAndIsAvailableAndGardenerType(locality, availability, gardenerType), HttpStatus.OK);
     }
 
     @PatchMapping("updateAvailability/{email}/{availability}")

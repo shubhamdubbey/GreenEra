@@ -1,13 +1,22 @@
 package com.green_era.gardener_service.entity;
 
+import com.green_era.gardener_service.utils.GardenerType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import java.time.LocalTime;
+import java.util.Objects;
 
 @Entity
-@Table(name = "gardeners")
+@Table(
+        name = "gardeners",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_gardener_email", columnNames = "email")
+        },
+        indexes = {
+                @Index(name = "idx_gardener_locality", columnList = "locality"),
+                @Index(name = "idx_gardener_type_available", columnList = "gardener_type, is_available")
+        }
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,14 +24,15 @@ import lombok.NoArgsConstructor;
 public class GardenerEntity {
 
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name = "id")
+    private Long id;
 
-    @Column(name = "name")
+    // ---------------- BASIC INFO ----------------
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "phone_number")
@@ -31,9 +41,24 @@ public class GardenerEntity {
     @Column(name = "locality")
     private String locality;
 
+    // ---------------- AVAILABILITY ----------------
     @Column(name = "is_available")
     @Builder.Default
     private boolean isAvailable = true;
+
+    @Column(name = "work_start_time")
+    @Builder.Default
+    private LocalTime workStartTime = LocalTime.of(8, 0); // default 8 AM
+
+    @Column(name = "work_end_time")
+    @Builder.Default
+    private LocalTime workEndTime = LocalTime.of(18, 0); // default 6 PM
+
+    // ---------------- TYPE & PERFORMANCE ----------------
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gardener_type", nullable = false)
+    @Builder.Default
+    private GardenerType gardenerType = GardenerType.REGULAR;
 
     @Column(name = "rating")
     @Builder.Default
@@ -43,41 +68,32 @@ public class GardenerEntity {
     @Builder.Default
     private int totalJobsCompleted = 0;
 
-    @Column(name = "is_urgent_type")
-    private boolean isUrgentType;
-
     @Column(name = "hourly_rate")
-    private double hourlyRate;
+    @Builder.Default
+    private double hourlyRate = 100.0; // default rate
 
-    public double getRating() {
-        return rating;
+    // ---------------- UTILITY METHODS ----------------
+    public void incrementJobsCompleted() {
+        this.totalJobsCompleted += 1;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
+    public boolean isWithinWorkingHours(LocalTime time) {
+        return !time.isBefore(workStartTime) && !time.isAfter(workEndTime);
     }
 
-    public int getTotalJobsCompleted() {
-        return totalJobsCompleted;
+    public boolean canTakeUrgentBooking() {
+        return gardenerType == GardenerType.URGENT || gardenerType == GardenerType.BOTH;
     }
 
-    public void setTotalJobsCompleted(int totalJobsCompleted) {
-        this.totalJobsCompleted = totalJobsCompleted;
+    public boolean canTakeRegularBooking() {
+        return gardenerType == GardenerType.REGULAR || gardenerType == GardenerType.BOTH;
     }
 
-    public double getHourlyRate(){
-        return hourlyRate;
-    }
-
-    public void setHourlyRate(double hourlyRate){
-        this.hourlyRate = hourlyRate;
-    }
-
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -121,11 +137,51 @@ public class GardenerEntity {
         isAvailable = available;
     }
 
-    public boolean isUrgentType() {
-        return isUrgentType;
+    public LocalTime getWorkStartTime() {
+        return workStartTime;
     }
 
-    public void setUrgentType(boolean urgentType) {
-        isUrgentType = urgentType;
+    public void setWorkStartTime(LocalTime workStartTime) {
+        this.workStartTime = workStartTime;
+    }
+
+    public LocalTime getWorkEndTime() {
+        return workEndTime;
+    }
+
+    public void setWorkEndTime(LocalTime workEndTime) {
+        this.workEndTime = workEndTime;
+    }
+
+    public GardenerType getGardenerType() {
+        return gardenerType;
+    }
+
+    public void setGardenerType(GardenerType gardenerType) {
+        this.gardenerType = gardenerType;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getTotalJobsCompleted() {
+        return totalJobsCompleted;
+    }
+
+    public void setTotalJobsCompleted(int totalJobsCompleted) {
+        this.totalJobsCompleted = totalJobsCompleted;
+    }
+
+    public double getHourlyRate() {
+        return hourlyRate;
+    }
+
+    public void setHourlyRate(double hourlyRate) {
+        this.hourlyRate = hourlyRate;
     }
 }

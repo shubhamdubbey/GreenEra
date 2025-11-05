@@ -7,6 +7,7 @@ import com.green_era.gardener_service.feign.BookingClient;
 import com.green_era.gardener_service.repository.GardenerRepository;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
+import com.green_era.gardener_service.utils.GardenerType;
 import com.green_era.gardener_service.utils.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,8 +74,8 @@ public class GardenerServiceImpl implements GardenerService{
     }
 
     @Override
-    public List<GardenerDto> getAvailableGardeners(String locality, boolean availability) {
-        List<GardenerEntity> listOfGardeners = gardenerRepository.findByLocalityAndIsAvailable(locality, availability);
+    public List<GardenerDto> findByLocalityAndIsAvailableAndGardenerType(String locality, boolean availability, GardenerType gardenerType) {
+        List<GardenerEntity> listOfGardeners = gardenerRepository.findByLocalityAndIsAvailableAndGardenerType(locality, availability, gardenerType);
         List<GardenerDto> gardeners = new ArrayList<>();
         listOfGardeners.forEach(gardener -> {
             gardeners.add(Mapper.gardenerEntityToDto(gardener));

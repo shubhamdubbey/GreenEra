@@ -3,6 +3,8 @@ package com.green_era.gardener_service.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.time.LocalTime;
+
 @Data
 public class GardenerDto {
     private Long id;
@@ -25,9 +27,29 @@ public class GardenerDto {
     @NotBlank(message =  "Hourly rate is mandatory")
     private double hourlyRate;
 
+    private LocalTime workStartTime;
+
+    private LocalTime workEndTime;
+
     private double rating;
 
     private int jobsCompleted;
+
+    public LocalTime getWorkStartTime() {
+        return workStartTime;
+    }
+
+    public void setWorkStartTime(LocalTime workStartTime) {
+        this.workStartTime = workStartTime;
+    }
+
+    public LocalTime getWorkEndTime() {
+        return workEndTime;
+    }
+
+    public void setWorkEndTime(LocalTime workEndTime) {
+        this.workEndTime = workEndTime;
+    }
 
     public double getHourlyRate() {
         return hourlyRate;

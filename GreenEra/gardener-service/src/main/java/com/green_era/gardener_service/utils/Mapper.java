@@ -15,6 +15,8 @@ public class Mapper {
         gardener.setHourlyRate(dto.getHourlyRate());
         gardener.setRating(dto.getRating());
         gardener.setTotalJobsCompleted(dto.getJobsCompleted());
+        gardener.setWorkEndTime(dto.getWorkEndTime());
+        gardener.setWorkStartTime(dto.getWorkStartTime());
         return gardener;
     }
 
@@ -31,6 +33,8 @@ public class Mapper {
         dto.setRating(entity.getRating());
         dto.setJobsCompleted(entity.getTotalJobsCompleted());
         dto.setHourlyRate(entity.getHourlyRate());
+        dto.setWorkEndTime(entity.getWorkEndTime());
+        dto.setWorkStartTime(entity.getWorkStartTime());
         return dto;
     }
 }
