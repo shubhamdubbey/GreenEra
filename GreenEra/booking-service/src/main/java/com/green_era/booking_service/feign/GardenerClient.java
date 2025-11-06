@@ -5,6 +5,8 @@ import com.green_era.booking_service.dto.GardenerDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @FeignClient(name = "gardener-service")
@@ -25,9 +27,18 @@ public interface GardenerClient {
 
 
     @PatchMapping("/gardener/updateAvailability/{email}/{availability}")
-    GardenerDto updateAvailability(@PathVariable("email") String email,
+    void updateAvailability(@PathVariable("email") String email,
                                    @PathVariable("availability") boolean availability);
 
     @PostMapping("gardener/blockSlot")
-    String blockSlot(@RequestBody GardenerAvaibilityDto dto);
+    void blockSlot(@RequestBody GardenerAvaibilityDto dto);
+
+    @GetMapping("/gardener/getBlockedSlots/{email}")
+    List<GardenerAvaibilityDto> getBlockedSlots(@PathVariable("email") String email);
+
+
+    @DeleteMapping("/gardener/deleteBlockedSlots/{email}/{date}/{time}")
+    void deleteBookingSlot(@PathVariable("email") String email,
+                     @PathVariable("date") LocalDate date,
+                     @PathVariable("time") LocalTime time);
 }

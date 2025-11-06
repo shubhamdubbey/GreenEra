@@ -158,7 +158,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
 
-        gardenerClient.updateAvailability(booking.getGardenerEmail(), true);
+        gardenerClient.deleteBookingSlot(booking.getGardenerEmail(), booking.getBookingDate(), booking.getStartTime());
         return "Cancelled successfully";
     }
 
@@ -174,7 +174,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingStatus(BookingStatus.COMPLETED);
         bookingRepository.save(booking);
 
-        gardenerClient.updateAvailability(booking.getGardenerEmail(), true);
+        gardenerClient.deleteBookingSlot(booking.getGardenerEmail(), booking.getBookingDate(), booking.getStartTime());
         return "Completed successfully";
     }
 
