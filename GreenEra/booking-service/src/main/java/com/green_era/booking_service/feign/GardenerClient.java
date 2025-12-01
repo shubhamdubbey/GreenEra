@@ -33,8 +33,8 @@ public interface GardenerClient {
     @PostMapping("gardener/blockSlot")
     void blockSlot(@RequestBody GardenerAvaibilityDto dto);
 
-    @GetMapping("/gardener/getBlockedSlots/{email}")
-    List<GardenerAvaibilityDto> getBlockedSlots(@PathVariable("email") String email);
+    @GetMapping("/gardener/getBlockedSlots/{email}/{date}")
+    List<GardenerAvaibilityDto> getBlockedSlots(@PathVariable("email") String email, @PathVariable("date") LocalDate date);
 
 
     @DeleteMapping("/gardener/deleteBlockedSlots/{email}/{date}/{time}")

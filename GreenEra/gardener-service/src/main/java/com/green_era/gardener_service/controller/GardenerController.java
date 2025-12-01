@@ -7,6 +7,7 @@ import com.green_era.gardener_service.service.GardenerService;
 import com.green_era.gardener_service.utils.AccountNotFoundException;
 import com.green_era.gardener_service.utils.DuplicateAccountException;
 import com.green_era.gardener_service.utils.GardenerType;
+import jdk.vm.ci.meta.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,9 +79,9 @@ public class GardenerController {
         return new ResponseEntity<>(gardenerService.BlockGardenerSlot(dto), HttpStatus.OK);
     }
 
-    @GetMapping("getBlockedSlots/{email}")
-    ResponseEntity<List<GardenerAvaibilityDto>> getBlockedSlots(@PathVariable("email") String email){
-        return new ResponseEntity<>(gardenerService.getBlockedSlots(email), HttpStatus.OK);
+    @GetMapping("getBlockedSlots/{email}/{date}")
+    ResponseEntity<List<GardenerAvaibilityDto>> getBlockedSlots(@PathVariable("email") String email, @PathVariable("date")LocalDate date){
+        return new ResponseEntity<>(gardenerService.getBlockedSlots(email, date), HttpStatus.OK);
     }
 
     @DeleteMapping("deleteBlockedSlots/{email}/{date}/{time}")

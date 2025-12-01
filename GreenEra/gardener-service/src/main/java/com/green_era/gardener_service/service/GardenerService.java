@@ -25,6 +25,6 @@ public interface GardenerService {
     GardenerDto markUnavailableByEmail(String email) throws AccountNotFoundException;
     List<BookingDto> getAllBookings(String email);
     String BlockGardenerSlot(GardenerAvaibilityDto dto);
-    List<GardenerAvaibilityDto> getBlockedSlots(String email);
+    List<GardenerAvaibilityDto> getBlockedSlots(String email, LocalDate date);
     String deleteBlockedSlots(String email, LocalDate date, LocalTime time);
 }

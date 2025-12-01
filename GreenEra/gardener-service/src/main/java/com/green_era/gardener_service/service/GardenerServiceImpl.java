@@ -145,8 +145,8 @@ public class GardenerServiceImpl implements GardenerService{
     }
 
     @Override
-    public List<GardenerAvaibilityDto> getBlockedSlots(String email) {
-        List<GardenerAvailability> list = gardenerAvailabilityRepository.findByGardenerEmail(email);
+    public List<GardenerAvaibilityDto> getBlockedSlots(String email, LocalDate date) {
+        List<GardenerAvailability> list = gardenerAvailabilityRepository.findByGardenerEmailAndDate(email, date);
         List<GardenerAvaibilityDto> listOfGardeners = new ArrayList<>();
         list.forEach(g -> {
             GardenerAvaibilityDto gardenerAvaibilityDto = new GardenerAvaibilityDto();
