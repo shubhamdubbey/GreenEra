@@ -15,6 +15,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -37,46 +41,30 @@ public class BookingServiceImpl implements BookingService {
     private static final int SLOT_DURATION_MINUTES = 30;
 
     // ------------------------------------------------------------------------
-    // CREATE BOOKING (Intelligent + Slot-Aware + Fair + Safe)
+    // CREATE BOOKING  (Resilience Added)
     // ------------------------------------------------------------------------
     @Override
     @Transactional
     public BookingDto createBooking(BookingDto dto) {
-        // ------------------- 1. BASIC VALIDATIONS -------------------
-        if (dto == null)
-            throw new IllegalArgumentException("Booking request cannot be null.");
 
-        if (dto.getBookingDate() == null)
-            throw new IllegalArgumentException("Booking date is required.");
+        // ---------- 1. VALIDATIONS ----------
+        if (dto == null) throw new IllegalArgumentException("Booking request cannot be null.");
+        if (dto.getBookingDate() == null) throw new IllegalArgumentException("Booking date is required.");
+        if (dto.getStartTime() == null) throw new IllegalArgumentException("Start time is required.");
+        if (dto.getBookingDate().isBefore(LocalDate.now())) throw new IllegalArgumentException("Cannot book a past date.");
+        if (dto.getBookingType() == null) dto.setBookingType(BookingType.REGULAR);
 
-        if (dto.getStartTime() == null)
-            throw new IllegalArgumentException("Start time is required.");
-
-        if (dto.getBookingDate().isBefore(LocalDate.now()))
-            throw new IllegalArgumentException("Cannot book a past date.");
-
-        if (dto.getBookingType() == null)
-            dto.setBookingType(BookingType.REGULAR);
-
-        // Normalize to nearest 30-min slot
         dto.setStartTime(normalizeToSlot(dto.getStartTime()));
         dto.setEndTime(dto.getStartTime().plusMinutes(SLOT_DURATION_MINUTES));
 
-        // ------------------- 2. FETCH GARDENERS -------------------
-        List<GardenerDto> allGardeners;
-        try {
-            allGardeners = gardenerClient.getAllGardeners();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to fetch gardeners. Gardener service may be unavailable.");
-        }
-
+        // ---------- 2. FETCH GARDENERS (WITH RESILIENCE) ----------
+        List<GardenerDto> allGardeners = getAllGardenersSafe();
         if (allGardeners == null || allGardeners.isEmpty())
-            throw new EntityNotFoundException("No gardeners registered in the system.");
+            throw new IllegalStateException("Gardener service unavailable or no gardeners found.");
 
-        // Filter by type (regular/urgent)
         List<GardenerDto> eligiblePool = filterGardenersByType(allGardeners, dto.getBookingType());
 
-        // ------------------- 3. FILTER AVAILABLE & SLOT-FREE -------------------
+        // ---------- 3. AVAILABILITY & SLOT FILTERING ----------
         eligiblePool = eligiblePool.stream()
                 .filter(g -> g.getAvailable()
                         && (g.getWorkStartTime() == null || g.getWorkStartTime().isBefore(dto.getStartTime()))
@@ -84,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
                 .filter(g -> !isSlotBlocked(g.getEmail(), dto))
                 .collect(Collectors.toList());
 
-        // ------------------- 4. FALLBACK (URGENT → REGULAR POOL) -------------------
+        // ---------- 4. URGENT FALLBACK ----------
         if (eligiblePool.isEmpty() && dto.getBookingType() == BookingType.URGENT) {
             eligiblePool = filterGardenersByType(allGardeners, BookingType.REGULAR).stream()
                     .filter(g -> g.getAvailable() && !isSlotBlocked(g.getEmail(), dto))
@@ -92,28 +80,21 @@ public class BookingServiceImpl implements BookingService {
         }
 
         if (eligiblePool.isEmpty())
-            throw new IllegalStateException("No gardeners available for this slot. Try a different time.");
+            throw new IllegalStateException("No gardeners available for this slot.");
 
-        // ------------------- 5. FAIRNESS: PICK LEAST BOOKED -------------------
+        // ---------- 5. FAIRNESS ----------
         GardenerDto selected = eligiblePool.stream()
                 .min(Comparator.comparingInt(Utility::getBookingCountForGardener))
-                .orElseThrow(() -> new IllegalStateException("Unable to assign gardener."));
+                .orElseThrow(() -> new IllegalStateException("Could not select gardener."));
 
-        // ------------------- 6. FETCH USER DETAILS -------------------
-        UserDto user;
-        try {
-            user = userClient.getUser(dto.getUserEmail());
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to fetch user info. User service may be down.");
-        }
+        // ---------- 6. FETCH USER (WITH RESILIENCE) ----------
+        UserDto user = getUserSafe(dto.getUserEmail());
+        if (user == null) throw new EntityNotFoundException("User not found: " + dto.getUserEmail());
 
-        if (user == null)
-            throw new EntityNotFoundException("User not found for email: " + dto.getUserEmail());
-
-        // ------------------- 7. PRICE CALCULATION -------------------
+        // ---------- 7. PRICE ----------
         double price = calculatePrice(dto, selected.getHourlyRate());
 
-        // ------------------- 8. SAVE BOOKING -------------------
+        // ---------- 8. SAVE BOOKING ----------
         BookingEntity booking = Mapper.bookingDtoToBookingEntity(dto);
         booking.setGardenerEmail(selected.getEmail());
         booking.setGardenerName(selected.getName());
@@ -127,30 +108,85 @@ public class BookingServiceImpl implements BookingService {
         try {
             saved = bookingRepository.save(booking);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("Booking conflict detected. Please retry after a few seconds.");
-        } catch (Exception e) {
-            throw new IllegalStateException("Unexpected error while saving booking: " + e.getMessage());
+            throw new IllegalStateException("Conflict detected. Retry after few seconds.");
         }
 
-        // ------------------- 9. UPDATE AVAILABILITY + BLOCK SLOT -------------------
-        try {
-            gardenerClient.updateAvailability(selected.getEmail(), false);
+        // ---------- 9. UPDATE GARDENER (WITH RESILIENCE) ----------
+        updateAvailabilitySafe(selected.getEmail(), false);
+        GardenerAvaibilityDto slotDto = new GardenerAvaibilityDto(
+                selected.getEmail(),
+                booking.getBookingDate(),
+                booking.getStartTime(),
+                booking.getEndTime()
+        );
+        blockSlotSafe(slotDto);
 
-            GardenerAvaibilityDto slotDto = new GardenerAvaibilityDto(
-                    selected.getEmail(),
-                    booking.getBookingDate(),
-                    booking.getStartTime(),
-                    booking.getEndTime()
-            );
-            gardenerClient.blockSlot(slotDto);
-
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to update gardener slot. Booking rolled back.");
-        }
-
-        // ------------------- 10. RETURN -------------------
+        // ---------- 10. RETURN ----------
         return Mapper.bookingToBookingDto(saved);
     }
+
+    // ------------------------------------------------------------------------
+    // SAFE EXTERNAL CALLS (RESILIENCE)
+    // ------------------------------------------------------------------------
+
+    @CircuitBreaker(name = "gardenerService", fallbackMethod = "getAllGardenersFallback")
+    @Retry(name = "gardenerService")
+    @TimeLimiter(name = "gardenerService")
+    public List<GardenerDto> getAllGardenersSafe() {
+        return gardenerClient.getAllGardeners();
+    }
+
+    public List<GardenerDto> getAllGardenersFallback(Throwable e) {
+        System.out.println("⚠ Gardener service DOWN → Empty list provided.");
+        return Collections.emptyList();
+    }
+
+
+    @CircuitBreaker(name = "userService", fallbackMethod = "getUserFallback")
+    @Retry(name = "userService")
+    @TimeLimiter(name = "userService")
+    public UserDto getUserSafe(String email) {
+        return userClient.getUser(email);
+    }
+
+    public UserDto getUserFallback(String email, Throwable e) {
+        System.out.println("⚠ User service DOWN → Temporary fallback user.");
+        UserDto dto = new UserDto();
+        dto.setEmail(email);
+        dto.setFirstName("Unknown");
+        dto.setLastName("User");
+        dto.setPhoneNumber("N/A");
+        return dto;
+    }
+
+
+    @CircuitBreaker(name = "gardenerService", fallbackMethod = "availabilityFallback")
+    @Retry(name = "gardenerService")
+    @TimeLimiter(name = "gardenerService")
+    public void updateAvailabilitySafe(String email, boolean available) {
+        gardenerClient.updateAvailability(email, available);
+    }
+
+    public void availabilityFallback(String email, boolean available, Throwable e) {
+        System.out.println("⚠ FAILED updating availability for " + email);
+    }
+
+
+    @CircuitBreaker(name = "gardenerService", fallbackMethod = "blockSlotFallback")
+    @Retry(name = "gardenerService")
+    @TimeLimiter(name = "gardenerService")
+    public void blockSlotSafe(GardenerAvaibilityDto dto) {
+        gardenerClient.blockSlot(dto);
+    }
+
+    public void blockSlotFallback(GardenerAvaibilityDto dto, Throwable e) {
+        System.out.println("⚠ FAILED to block slot (fallback executed).");
+    }
+
+
+    // ------------------------------------------------------------------------
+    // OTHER METHODS (NO CHANGE)
+    // ------------------------------------------------------------------------
 
     @Override
     public BookingDto getBookingById(Long id) throws BookingNotFoundException {
@@ -187,7 +223,7 @@ public class BookingServiceImpl implements BookingService {
         try {
             gardenerClient.deleteBookingSlot(booking.getGardenerEmail(), booking.getBookingDate(), booking.getStartTime());
         } catch (Exception e) {
-            System.err.println("⚠️ Warning: Failed to free slot for cancelled booking.");
+            System.err.println("⚠ FAILED to free slot.");
         }
 
         return "Cancelled successfully.";
@@ -204,7 +240,7 @@ public class BookingServiceImpl implements BookingService {
         try {
             gardenerClient.deleteBookingSlot(booking.getGardenerEmail(), booking.getBookingDate(), booking.getStartTime());
         } catch (Exception e) {
-            System.err.println("⚠️ Warning: Failed to free slot for completed booking.");
+            System.err.println("⚠ FAILED to free slot.");
         }
 
         return "Completed successfully.";

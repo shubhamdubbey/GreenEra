@@ -8,21 +8,21 @@ import com.green_era.gardener_service.entity.GardenerEntity;
 import com.green_era.gardener_service.feign.BookingClient;
 import com.green_era.gardener_service.repository.GardenerAvailabilityRepository;
 import com.green_era.gardener_service.repository.GardenerRepository;
-import com.green_era.gardener_service.utils.AccountNotFoundException;
-import com.green_era.gardener_service.utils.DuplicateAccountException;
-import com.green_era.gardener_service.utils.GardenerType;
-import com.green_era.gardener_service.utils.Mapper;
+import com.green_era.gardener_service.utils.*;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
-public class GardenerServiceImpl implements GardenerService{
+public class GardenerServiceImpl implements GardenerService {
 
     @Autowired
     BookingClient bookingClient;
@@ -33,139 +33,143 @@ public class GardenerServiceImpl implements GardenerService{
     @Autowired
     GardenerAvailabilityRepository gardenerAvailabilityRepository;
 
+    private static final Logger log = LoggerFactory.getLogger(GardenerServiceImpl.class);
+
     @Override
     public GardenerDto registerGardener(GardenerDto gardenerDto) throws DuplicateAccountException {
-        Optional<GardenerEntity> gardenerEntityOptionalEmail = gardenerRepository.findByEmail(gardenerDto.getEmail());
-        if(gardenerEntityOptionalEmail.isPresent()) throw new DuplicateAccountException("Account already exists with given email id.");
+        Optional<GardenerEntity> existingEmail = gardenerRepository.findByEmail(gardenerDto.getEmail());
+        if (existingEmail.isPresent())
+            throw new DuplicateAccountException("Account already exists with given email id.");
 
-        Optional<GardenerEntity> gardenerEntityOptionalPhone = gardenerRepository.findByPhoneNumber(gardenerDto.getPhoneNumber());
-        if(gardenerEntityOptionalPhone.isPresent()) throw new DuplicateAccountException("Account already exists with given phone number.");
+        Optional<GardenerEntity> existingPhone = gardenerRepository.findByPhoneNumber(gardenerDto.getPhoneNumber());
+        if (existingPhone.isPresent())
+            throw new DuplicateAccountException("Account already exists with given phone number.");
 
         GardenerEntity gardener = Mapper.gardenerDtoToEntity(gardenerDto);
         gardener = gardenerRepository.save(gardener);
-
         return Mapper.gardenerEntityToDto(gardener);
     }
 
     @Override
     public List<GardenerDto> getAllGardeners() {
-        Iterable<GardenerEntity> listOfGardenersEntity = gardenerRepository.findAll();
-        List<GardenerDto> listOfGardeners = new ArrayList<>();
-        listOfGardenersEntity.forEach(gardener -> {
-            listOfGardeners.add(Mapper.gardenerEntityToDto(gardener));
-        });
-        return listOfGardeners;
+        List<GardenerDto> list = new ArrayList<>();
+        gardenerRepository.findAll().forEach(g -> list.add(Mapper.gardenerEntityToDto(g)));
+        return list;
     }
 
     @Override
     public GardenerDto getGardenerById(Long id) throws AccountNotFoundException {
-        Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findById(id);
-        if(optionalOfGardenerEntity.isPresent()){
-            return Mapper.gardenerEntityToDto(optionalOfGardenerEntity.get());
-        } else throw new AccountNotFoundException("No gardener found with the given id.");
+        return gardenerRepository.findById(id)
+                .map(Mapper::gardenerEntityToDto)
+                .orElseThrow(() -> new AccountNotFoundException("No gardener found with the given id."));
     }
 
     @Override
     public GardenerDto getGardenerByEmail(String email) throws AccountNotFoundException {
-        Optional<GardenerEntity> gardenerEntity = gardenerRepository.findByEmail(email);
-        if(gardenerEntity.isPresent()) return Mapper.gardenerEntityToDto(gardenerEntity.get());
-        else throw new AccountNotFoundException("Gardener not registered with given mail id.");
+        return gardenerRepository.findByEmail(email)
+                .map(Mapper::gardenerEntityToDto)
+                .orElseThrow(() -> new AccountNotFoundException("Gardener not registered with given email id."));
     }
 
     @Override
     public String deleteGardener(Long id) throws AccountNotFoundException {
-        Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findById(id);
-        if(optionalOfGardenerEntity.isPresent()){
-            gardenerRepository.delete(optionalOfGardenerEntity.get());
-            return "Success";
-        } else throw new AccountNotFoundException("No gardener found with the given id.");
+        GardenerEntity entity = gardenerRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException("No gardener found with the given id."));
+        gardenerRepository.delete(entity);
+        return "Success";
     }
 
     @Override
     public List<GardenerDto> findByLocalityAndIsAvailableAndGardenerType(String locality, boolean availability, GardenerType gardenerType) {
-        List<GardenerEntity> listOfGardeners = gardenerRepository.findByLocalityAndIsAvailableAndGardenerType(locality, availability, gardenerType);
-        List<GardenerDto> gardeners = new ArrayList<>();
-        listOfGardeners.forEach(gardener -> {
-            gardeners.add(Mapper.gardenerEntityToDto(gardener));
-        });
-
-        return gardeners;
+        List<GardenerDto> dtoList = new ArrayList<>();
+        gardenerRepository.findByLocalityAndIsAvailableAndGardenerType(locality, availability, gardenerType)
+                .forEach(g -> dtoList.add(Mapper.gardenerEntityToDto(g)));
+        return dtoList;
     }
 
     @Override
     public GardenerDto updateAvailability(String email, Boolean available) throws AccountNotFoundException {
-        Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findByEmail(email);
-        if(optionalOfGardenerEntity.isPresent()){
-            GardenerEntity gardener = optionalOfGardenerEntity.get();
-            gardener.setAvailable(available);
-            gardener = gardenerRepository.save(gardener);
+        GardenerEntity entity = gardenerRepository.findByEmail(email)
+                .orElseThrow(() -> new AccountNotFoundException("No gardener found with given email id."));
 
-            return Mapper.gardenerEntityToDto(gardener);
-        } else throw new AccountNotFoundException("No gardener found with the given id.");
+        entity.setAvailable(available);
+        gardenerRepository.save(entity);
+        return Mapper.gardenerEntityToDto(entity);
     }
 
     @Override
     public String updateGardener(Long id, GardenerDto dto) throws AccountNotFoundException {
-        Optional<GardenerEntity> optionalOfGardenerEntity = gardenerRepository.findById(id);
-        if(optionalOfGardenerEntity.isPresent()){
-            GardenerEntity gardener = Mapper.gardenerDtoToEntity(dto);
-            gardenerRepository.save(gardener);
-            return "Success";
-        } else throw new AccountNotFoundException("No gardener found with the given id.");
+        gardenerRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException("No gardener found with the given id."));
+
+        GardenerEntity entity = Mapper.gardenerDtoToEntity(dto);
+        gardenerRepository.save(entity);
+        return "Success";
     }
 
     @Override
     public GardenerDto markUnavailableByEmail(String email) throws AccountNotFoundException {
-        Optional<GardenerEntity> gardenerEntity = gardenerRepository.findByEmail(email);
-        if(gardenerEntity.isPresent()){
-            GardenerEntity gardener = gardenerEntity.get();
-            gardener.setAvailable(false);
-            gardenerRepository.save(gardener);
-            return Mapper.gardenerEntityToDto(gardener);
-        }else throw new AccountNotFoundException("No gardener found with given email id.");
+        GardenerEntity entity = gardenerRepository.findByEmail(email)
+                .orElseThrow(() -> new AccountNotFoundException("No gardener found with the given email id."));
+
+        entity.setAvailable(false);
+        gardenerRepository.save(entity);
+        return Mapper.gardenerEntityToDto(entity);
     }
 
+    // ---------------------------------------------------------------------
+    // FEIGN CALL (RESILIENCE REQUIRED)
+    // ---------------------------------------------------------------------
+
     @Override
+    @CircuitBreaker(name = "bookingCB", fallbackMethod = "fallbackBookings")
+    @Retry(name = "bookingRetry")
+    @TimeLimiter(name = "bookingTL")
     public List<BookingDto> getAllBookings(String email) {
         return bookingClient.getBookingsbyGardener(email);
     }
 
+    // ---------------------- FALLBACK -----------------------
+    public List<BookingDto> fallbackBookings(String email, Throwable ex) {
+        log.error("Booking service unavailable for email {} → Fallback activated. Reason: {}", email, ex.getMessage());
+        return new ArrayList<>(); // Returning empty list as safe fallback
+    }
+
+    // ---------------------------------------------------------------------
+    // LOCAL DB OPS (No Resilience needed)
+    // ---------------------------------------------------------------------
+
     @Override
     public String BlockGardenerSlot(GardenerAvaibilityDto dto) {
-        GardenerAvailability gardenerAvailability = new GardenerAvailability();
-        gardenerAvailability.setGardener_email(dto.getEmail());
-        gardenerAvailability.setDate(dto.getDate());
-        gardenerAvailability.setStartTime(dto.getStartTime());
-        gardenerAvailability.setEndTime(dto.getEndTime());
-        gardenerAvailability.setBooked(true);
-
-        gardenerAvailabilityRepository.save(gardenerAvailability);
-
+        GardenerAvailability availability = new GardenerAvailability();
+        availability.setGardener_email(dto.getEmail());
+        availability.setDate(dto.getDate());
+        availability.setStartTime(dto.getStartTime());
+        availability.setEndTime(dto.getEndTime());
+        availability.setBooked(true);
+        gardenerAvailabilityRepository.save(availability);
         return "success";
     }
 
     @Override
     public List<GardenerAvaibilityDto> getBlockedSlots(String email, LocalDate date) {
-        List<GardenerAvailability> list = gardenerAvailabilityRepository.findByGardenerEmailAndDate(email, date);
-        List<GardenerAvaibilityDto> listOfGardeners = new ArrayList<>();
-        list.forEach(g -> {
-            GardenerAvaibilityDto gardenerAvaibilityDto = new GardenerAvaibilityDto();
-            gardenerAvaibilityDto.setDate(g.getDate());
-            gardenerAvaibilityDto.setEmail(g.getGardener_email());
-            gardenerAvaibilityDto.setStartTime(g.getStartTime());
-            gardenerAvaibilityDto.setEndTime(g.getEndTime());
-
-            listOfGardeners.add(gardenerAvaibilityDto);
-        });
-
-        return listOfGardeners;
+        List<GardenerAvaibilityDto> list = new ArrayList<>();
+        gardenerAvailabilityRepository.findByGardenerEmailAndDate(email, date)
+                .forEach(a -> {
+                    GardenerAvaibilityDto dto = new GardenerAvaibilityDto();
+                    dto.setEmail(a.getGardener_email());
+                    dto.setDate(a.getDate());
+                    dto.setStartTime(a.getStartTime());
+                    dto.setEndTime(a.getEndTime());
+                    list.add(dto);
+                });
+        return list;
     }
 
     @Override
     public String deleteBlockedSlots(String email, LocalDate date, LocalTime time) {
-        Optional<GardenerAvailability> gardenerAvailability = gardenerAvailabilityRepository.findByGardenerEmailAndDateAndStartTime(email, date, time);
-        gardenerAvailability.ifPresent(availability -> gardenerAvailabilityRepository.delete(availability));
-
+        gardenerAvailabilityRepository.findByGardenerEmailAndDateAndStartTime(email, date, time)
+                .ifPresent(gardenerAvailabilityRepository::delete);
         return "success";
     }
 }
