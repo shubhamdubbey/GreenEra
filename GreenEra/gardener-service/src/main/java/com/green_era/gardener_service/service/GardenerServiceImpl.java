@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class GardenerServiceImpl implements GardenerService {
@@ -35,16 +36,18 @@ public class GardenerServiceImpl implements GardenerService {
 
     private static final Logger log = LoggerFactory.getLogger(GardenerServiceImpl.class);
 
+    private static final String BOOKING_SERVICE = "bookingService";
+
+    // -------------------- LOCAL DB OPS (No Resilience needed) --------------------
+
     @Override
     public GardenerDto registerGardener(GardenerDto gardenerDto) throws DuplicateAccountException {
         Optional<GardenerEntity> existingEmail = gardenerRepository.findByEmail(gardenerDto.getEmail());
         if (existingEmail.isPresent())
             throw new DuplicateAccountException("Account already exists with given email id.");
-
         Optional<GardenerEntity> existingPhone = gardenerRepository.findByPhoneNumber(gardenerDto.getPhoneNumber());
         if (existingPhone.isPresent())
             throw new DuplicateAccountException("Account already exists with given phone number.");
-
         GardenerEntity gardener = Mapper.gardenerDtoToEntity(gardenerDto);
         gardener = gardenerRepository.save(gardener);
         return Mapper.gardenerEntityToDto(gardener);
@@ -91,7 +94,6 @@ public class GardenerServiceImpl implements GardenerService {
     public GardenerDto updateAvailability(String email, Boolean available) throws AccountNotFoundException {
         GardenerEntity entity = gardenerRepository.findByEmail(email)
                 .orElseThrow(() -> new AccountNotFoundException("No gardener found with given email id."));
-
         entity.setAvailable(available);
         gardenerRepository.save(entity);
         return Mapper.gardenerEntityToDto(entity);
@@ -101,7 +103,6 @@ public class GardenerServiceImpl implements GardenerService {
     public String updateGardener(Long id, GardenerDto dto) throws AccountNotFoundException {
         gardenerRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("No gardener found with the given id."));
-
         GardenerEntity entity = Mapper.gardenerDtoToEntity(dto);
         gardenerRepository.save(entity);
         return "Success";
@@ -111,33 +112,10 @@ public class GardenerServiceImpl implements GardenerService {
     public GardenerDto markUnavailableByEmail(String email) throws AccountNotFoundException {
         GardenerEntity entity = gardenerRepository.findByEmail(email)
                 .orElseThrow(() -> new AccountNotFoundException("No gardener found with the given email id."));
-
         entity.setAvailable(false);
         gardenerRepository.save(entity);
         return Mapper.gardenerEntityToDto(entity);
     }
-
-    // ---------------------------------------------------------------------
-    // FEIGN CALL (RESILIENCE REQUIRED)
-    // ---------------------------------------------------------------------
-
-    @Override
-    @CircuitBreaker(name = "bookingCB", fallbackMethod = "fallbackBookings")
-    @Retry(name = "bookingRetry")
-    @TimeLimiter(name = "bookingTL")
-    public List<BookingDto> getAllBookings(String email) {
-        return bookingClient.getBookingsbyGardener(email);
-    }
-
-    // ---------------------- FALLBACK -----------------------
-    public List<BookingDto> fallbackBookings(String email, Throwable ex) {
-        log.error("Booking service unavailable for email {} → Fallback activated. Reason: {}", email, ex.getMessage());
-        return new ArrayList<>(); // Returning empty list as safe fallback
-    }
-
-    // ---------------------------------------------------------------------
-    // LOCAL DB OPS (No Resilience needed)
-    // ---------------------------------------------------------------------
 
     @Override
     public String BlockGardenerSlot(GardenerAvaibilityDto dto) {
@@ -171,5 +149,21 @@ public class GardenerServiceImpl implements GardenerService {
         gardenerAvailabilityRepository.findByGardenerEmailAndDateAndStartTime(email, date, time)
                 .ifPresent(gardenerAvailabilityRepository::delete);
         return "success";
+    }
+
+    // -------------------- FEIGN CALLS WITH ASYNC RESILIENCE4J --------------------
+
+    @Override
+    @CircuitBreaker(name = BOOKING_SERVICE, fallbackMethod = "fallbackBookings")
+    @Retry(name = BOOKING_SERVICE)
+    @TimeLimiter(name = BOOKING_SERVICE)
+    public List<BookingDto> getAllBookings(String email) {
+        CompletableFuture<List<BookingDto>> future = CompletableFuture.supplyAsync(() -> bookingClient.getBookingsbyGardener(email));
+        return future.exceptionally(ex -> fallbackBookings(email, ex)).join();
+    }
+
+    public List<BookingDto> fallbackBookings(String email, Throwable ex) {
+        log.error("Booking service unavailable for email {} → Fallback activated. Reason: {}", email, ex.getMessage());
+        return new ArrayList<>();
     }
 }
