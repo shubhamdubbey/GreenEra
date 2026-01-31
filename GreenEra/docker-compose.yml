@@ -11,8 +11,8 @@ volumes:
 services:
   # ------------------- DISCOVERY SERVICE -------------------
   discovery-service:
-    image: discovery-service:latest
-    container_name: discovery-service
+    image: 211888003693.dkr.ecr.ap-southeast-2.amazonaws.com/discovery-service
+#    container_name: discovery-service
     build:
       context: ./discovery-service
       dockerfile: Dockerfile
@@ -31,13 +31,13 @@ services:
   # ------------------- USER SERVICE DB -------------------
   postgres-user:
     image: postgres:15
-    container_name: postgres-user
+#    container_name: postgres-user
     environment:
       POSTGRES_DB: user_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: user
-    ports:
-      - "5432:5432"
+#    ports:
+#      - "5432:5432"
     volumes:
       - pg_user_data:/var/lib/postgresql/data
     networks:
@@ -46,13 +46,13 @@ services:
   # ------------------- BOOKING SERVICE DB -------------------
   postgres-booking:
     image: postgres:15
-    container_name: postgres-booking
+#    container_name: postgres-booking
     environment:
       POSTGRES_DB: booking_db
       POSTGRES_USER: booking
       POSTGRES_PASSWORD: booking
-    ports:
-      - "5433:5432"
+#    ports:
+#      - "5433:5432"
     volumes:
       - pg_booking_data:/var/lib/postgresql/data
     networks:
@@ -61,13 +61,13 @@ services:
   # ------------------- GARDENER SERVICE DB -------------------
   postgres-gardener:
     image: postgres:15
-    container_name: postgres-gardener
+#    container_name: postgres-gardener
     environment:
       POSTGRES_DB: gardener_db
       POSTGRES_USER: gardener
       POSTGRES_PASSWORD: gardener
-    ports:
-      - "5434:5432"
+#    ports:
+#      - "5434:5432"
     volumes:
       - pg_gardener_data:/var/lib/postgresql/data
     networks:
@@ -75,8 +75,8 @@ services:
 
   # ------------------- USER SERVICE -------------------
   user-service:
-    image: user-service:latest
-    container_name: user-service
+    image: 211888003693.dkr.ecr.ap-southeast-2.amazonaws.com/user-service
+#    container_name: user-service
     build:
       context: ./user-service
       dockerfile: Dockerfile
@@ -94,8 +94,8 @@ services:
 
   # ------------------- BOOKING SERVICE -------------------
   booking-service:
-    image: booking-service:latest
-    container_name: booking-service
+    image: 211888003693.dkr.ecr.ap-southeast-2.amazonaws.com/booking-service
+#    container_name: booking-service
     build:
       context: ./booking-service
       dockerfile: Dockerfile
@@ -113,8 +113,8 @@ services:
 
   # ------------------- GARDENER SERVICE -------------------
   gardener-service:
-    image: gardener-service:latest
-    container_name: gardener-service
+    image: 211888003693.dkr.ecr.ap-southeast-2.amazonaws.com/gardener-service
+#    container_name: gardener-service
     build:
       context: ./gardener-service
       dockerfile: Dockerfile
@@ -132,8 +132,8 @@ services:
 
   # ------------------- GATEWAY SERVICE -------------------
   gateway-service:
-    image: gateway-service:latest
-    container_name: gateway-service
+    image: 211888003693.dkr.ecr.ap-southeast-2.amazonaws.com/gateway-service
+#    container_name: gateway-service
     build:
       context: ./gateway-service
       dockerfile: Dockerfile
