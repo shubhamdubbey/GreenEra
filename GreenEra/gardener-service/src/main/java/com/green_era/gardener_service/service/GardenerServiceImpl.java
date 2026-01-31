@@ -120,7 +120,7 @@ public class GardenerServiceImpl implements GardenerService {
     @Override
     public String BlockGardenerSlot(GardenerAvaibilityDto dto) {
         GardenerAvailability availability = new GardenerAvailability();
-        availability.setGardener_email(dto.getEmail());
+        availability.setGardenerEmail(dto.getEmail());
         availability.setDate(dto.getDate());
         availability.setStartTime(dto.getStartTime());
         availability.setEndTime(dto.getEndTime());
@@ -135,7 +135,7 @@ public class GardenerServiceImpl implements GardenerService {
         gardenerAvailabilityRepository.findByGardenerEmailAndDate(email, date)
                 .forEach(a -> {
                     GardenerAvaibilityDto dto = new GardenerAvaibilityDto();
-                    dto.setEmail(a.getGardener_email());
+                    dto.setEmail(a.getGardenerEmail());
                     dto.setDate(a.getDate());
                     dto.setStartTime(a.getStartTime());
                     dto.setEndTime(a.getEndTime());

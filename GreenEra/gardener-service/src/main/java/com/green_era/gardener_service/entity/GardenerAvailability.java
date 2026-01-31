@@ -16,7 +16,7 @@ public class GardenerAvailability {
     private Long id;
 
     @Column(name = "gardener_email")
-    private String gardener_email;
+    private String gardenerEmail;
 
     @Column(name = "date")
     private LocalDate date;
@@ -38,12 +38,12 @@ public class GardenerAvailability {
         this.id = id;
     }
 
-    public String getGardener_email() {
-        return gardener_email;
+    public String getGardenerEmail() {
+        return gardenerEmail;
     }
 
-    public void setGardener_email(String gardener_email) {
-        this.gardener_email = gardener_email;
+    public void setGardenerEmail(String gardenerEmail) {
+        this.gardenerEmail = gardenerEmail;
     }
 
     public LocalDate getDate() {
